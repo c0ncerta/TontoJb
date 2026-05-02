@@ -15,15 +15,15 @@ This directory contains research notes and operator-facing documentation for the
 | [`post_twin_pipeline.md`](post_twin_pipeline.md) | Notes for stages after twin/triplet discovery. |
 | [`webkit-probe-plan.md`](webkit-probe-plan.md) | WebKit probing plan and instrumentation notes. |
 
-## Root policy files
+## Policy files
 
 | Document | Purpose |
 |---|---|
-| [`../DISCLAIMER.md`](../DISCLAIMER.md) | Research-use boundaries, non-affiliation, and risk acknowledgement. |
-| [`../SECURITY.md`](../SECURITY.md) | Responsible reporting scope and unsupported request categories. |
-| [`../NOTICE.md`](../NOTICE.md) | Attribution, provenance, and third-party reference guidance. |
-| [`../CONTRIBUTING.md`](../CONTRIBUTING.md) | Contribution boundaries and publication checklist. |
-| [`../CHANGELOG.md`](../CHANGELOG.md) | Public research snapshot history. |
+| [`policy/DISCLAIMER.md`](policy/DISCLAIMER.md) | Research-use boundaries, non-affiliation, and risk acknowledgement. |
+| [`policy/SECURITY.md`](policy/SECURITY.md) | Responsible reporting scope and unsupported request categories. |
+| [`policy/NOTICE.md`](policy/NOTICE.md) | Attribution, provenance, and third-party reference guidance. |
+| [`policy/CONTRIBUTING.md`](policy/CONTRIBUTING.md) | Contribution boundaries and publication checklist. |
+| [`policy/CHANGELOG.md`](policy/CHANGELOG.md) | Public research snapshot history. |
 
 ## Publication hygiene
 

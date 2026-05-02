@@ -5,7 +5,7 @@ This page covers public, setup-level troubleshooting for the TontoJB research re
 ## Before troubleshooting
 
 - Confirm you are working from a clean checkout.
-- Confirm your use is authorized and consistent with [`../DISCLAIMER.md`](../DISCLAIMER.md).
+- Confirm your use is authorized and consistent with [`policy/DISCLAIMER.md`](policy/DISCLAIMER.md).
 - Confirm local certificates, logs, telemetry, and crash dumps are not staged for publication.
 - Confirm the target assumptions match [`firmware-scope.md`](firmware-scope.md).
 

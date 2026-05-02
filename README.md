@@ -1,7 +1,7 @@
 # TontoJB
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Research PoC](https://img.shields.io/badge/status-research%20PoC-orange.svg)](DISCLAIMER.md)
+[![Research PoC](https://img.shields.io/badge/status-research%20PoC-orange.svg)](docs/policy/DISCLAIMER.md)
 [![Target: PS5 11.60](https://img.shields.io/badge/target-PS5%2011.60-blue.svg)](docs/firmware-scope.md)
 
 **PS5 Netflix-sandbox kernel exploit proof of concept for firmware 11.60.**
@@ -10,7 +10,7 @@ TontoJB documents and implements a research PoC for driving the PS5 Netflix WebK
 
 This repository is written for security researchers, console-research developers, and people already comfortable with kernel exploitation concepts. It is a research-only proof of concept, not a consumer jailbreak package, piracy tool, or supported end-user product.
 
-Read first: [`DISCLAIMER.md`](DISCLAIMER.md), [`SECURITY.md`](SECURITY.md), [`NOTICE.md`](NOTICE.md), and [`docs/firmware-scope.md`](docs/firmware-scope.md).
+Read first: [`DISCLAIMER.md`](docs/policy/DISCLAIMER.md), [`SECURITY.md`](docs/policy/SECURITY.md), [`NOTICE.md`](docs/policy/NOTICE.md), and [`docs/firmware-scope.md`](docs/firmware-scope.md).
 
 ## Responsible-use notice
 
@@ -148,7 +148,7 @@ TontoJB/
 ├── payloads/       # Post-exploitation payload experiments and loader assets
 ├── proxy/          # mitmproxy delivery layer and host blocking configuration
 ├── offsets/        # Firmware-specific kernel offsets
-├── docs/           # Research notes, telemetry docs, run matrices, audits
+├── docs/           # Research notes, policy docs, telemetry docs, and run matrices
 ├── tools/          # Local analysis and telemetry helper scripts
 ├── LICENSE         # MIT license
 └── README.md       # Public entry point
@@ -169,11 +169,11 @@ The repository intentionally ignores local certificates, runtime telemetry, cach
 
 ## Project policy files
 
-- [`DISCLAIMER.md`](DISCLAIMER.md) — public research-use boundaries and risk acknowledgement.
-- [`SECURITY.md`](SECURITY.md) — responsible reporting scope and out-of-scope support requests.
-- [`NOTICE.md`](NOTICE.md) — third-party attribution and provenance guidance.
-- [`CONTRIBUTING.md`](CONTRIBUTING.md) — contribution boundaries for safe public research work.
-- [`CHANGELOG.md`](CHANGELOG.md) — public research snapshot history.
+- [`docs/policy/DISCLAIMER.md`](docs/policy/DISCLAIMER.md) — public research-use boundaries and risk acknowledgement.
+- [`docs/policy/SECURITY.md`](docs/policy/SECURITY.md) — responsible reporting scope and out-of-scope support requests.
+- [`docs/policy/NOTICE.md`](docs/policy/NOTICE.md) — third-party attribution and provenance guidance.
+- [`docs/policy/CONTRIBUTING.md`](docs/policy/CONTRIBUTING.md) — contribution boundaries for safe public research work.
+- [`docs/policy/CHANGELOG.md`](docs/policy/CHANGELOG.md) — public research snapshot history.
 
 ## Known limitations
 
