@@ -46,7 +46,7 @@ python3 -m py_compile tools/luacore_invariant_audit.py
 ## Audit command
 
 ```sh
-python3 tools/luacore_invariant_audit.py --logs logos --output docs/luacore_invariant_audit.md
+python3 tools/luacore_invariant_audit.py --logs logos --output docs/otros/luacore_invariant_audit.md
 ```
 
 Treat the generated report as the source of truth for historical runs.

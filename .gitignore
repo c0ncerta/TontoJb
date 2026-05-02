@@ -20,6 +20,9 @@ LOGS/
 # Local agent/workspace state
 MEMORY/
 
+# Imported/reference material kept local only
+gezine/
+
 # Scratch planning folders kept outside the public release
 /Plans/
 **/Plans/
@@ -33,6 +36,7 @@ exploit/extra/bak/
 logos/tanda*.md
 logos/old/
 docs/logito/
+docs/otros/
 
 # One-off local probe stub
 test_nrdp.js
