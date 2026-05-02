@@ -172,11 +172,12 @@ TontoJB is a port/adaptation and integration effort that stands on public PS5 an
 
 Prior work and references include:
 
+- [Netflix-N-Hack](https://github.com/NetflixNHack/Netflix-N-Hack) — foundational Netflix delivery, injection, and payload-loading work that TontoJB builds on and significantly adapts.
 - [TheFlow](https://github.com/theofficialflow) — original `sys_netcontrol` kernel exploitation research.
 - [egycnq](https://github.com/egycnq) — Luac0re-oriented netcontrol work and `poops_ps5.lua` lineage.
 - [Gezine / Luac0re](https://github.com/Gezine/Luac0re) — Lua-based PS5 exploit framework and offsets lineage.
 - [sleirsgoevy](https://github.com/sleirsgoevy) — `kstuff-lite`, `prosper0gdb`, and kernel primitive references.
-- Y2JB / `lapse.js` lineage — AIO and `ip6_pktopts`-style exploitation references.
+- [Gezine / Y2JB](https://github.com/Gezine/Y2JB) / `lapse.js` lineage — AIO and `ip6_pktopts`-style exploitation references.
 - [CTurt](https://github.com/CTurt) and [McCaulay](https://github.com/McCaulay) — `mast1c0re` research and references.
 
 If you publish derivative work from this repository, keep these credits intact and clearly distinguish original discovery from porting, adaptation, and integration work.
