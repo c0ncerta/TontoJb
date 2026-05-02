@@ -1,0 +1,38 @@
+# macOS / editor noise
+.DS_Store
+*.swp
+*.swo
+
+# Python runtime artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Local mitmproxy certificates: these can contain private CA material.
+.mitmproxy_certs/
+
+# Runtime logs and local telemetry captures
+LOGS/
+*.log
+*.jsonl
+
+# Local agent/workspace state
+MEMORY/
+
+# Scratch planning folders kept outside the public release
+/Plans/
+**/Plans/
+
+# Local backup snapshots not intended as release artifacts
+*.bak
+*BACKUP*
+exploit/extra/bak/
+
+# Proxy console dumps and archival log captures, not release documentation
+logos/tanda*.md
+logos/old/
+docs/logito/
+
+# One-off local probe stub
+test_nrdp.js

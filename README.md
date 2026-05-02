@@ -1,135 +1,193 @@
 # TontoJB
 
-PS5 Kernel Exploit via Netflix Sandbox — FW 11.60
+**PS5 Netflix-sandbox kernel exploit proof of concept for firmware 11.60.**
 
-## Overview
+TontoJB documents and implements a research PoC for driving the PS5 Netflix WebKit process into a kernel-exploitation chain: MITM-assisted JavaScript injection, syscall primitive validation, `sys_netcontrol` UCred UAF triggering, IPv6 `ip6_pktopts` heap shaping, kernel read/write primitives, and sandbox/credential patching research.
 
-TontoJB is a PS5 jailbreak that achieves kernel-level code execution through the Netflix app's WebKit sandbox. It exploits a UCred Use-After-Free (UAF) vulnerability triggered via `sys_netcontrol`, combined with IPv6 `ip6_pktopts` heap grooming to establish kernel read/write primitives.
+This repository is written for security researchers, console-research developers, and people already comfortable with kernel exploitation concepts. It is not a consumer jailbreak package.
 
-**No disc required. No USB. Just Netflix and a proxy.**
+## Responsible-use notice
 
-## How It Works
+- Use this only on hardware you own and accept full responsibility for.
+- This can crash, soft-brick, or otherwise destabilize a console.
+- Do not use this for piracy, unauthorized access, commercial abuse, or activity that violates applicable law or terms of service.
+- Firmware updates may patch relevant bugs; unsupported firmware should be expected to fail.
+- The project is provided as-is for research and education, without warranty.
 
+## Research status
+
+| Area | Status | Notes |
+|---|---:|---|
+| Target firmware | 11.60 | Offsets are pinned to the documented 11.60 research target. |
+| Delivery path | Netflix + MITM proxy | No disc path is required for this research route. |
+| Sandbox syscalls | Verified subset | See syscall table and `docs/research.md`. |
+| Netcontrol UAF path | Implemented PoC | Based on public prior work, adapted for this environment. |
+| Kernel R/W chain | Research PoC | Reliability depends on runtime state and target conditions. |
+
+## Exploit chain
+
+```text
+Netflix app WebKit
+  -> local mitmproxy route replacement
+  -> JavaScript loader / syscall primitives
+  -> sys_netcontrol UCred UAF trigger
+  -> IPv6 rthdr heap spray and twin/triplet discovery
+  -> kqueue reclaim and kernel structure leaks
+  -> pipe / pktopts kernel R/W primitives
+  -> curproc discovery
+  -> ucred patch and sandbox escape research
 ```
-Netflix App (WebKit) → MITM Proxy → JS Injection → syscall primitives
-    → sys_netcontrol UAF → rthdr heap spray → kqueue reclaim
-    → kernel R/W → ucred patch → root + sandbox escape
-```
 
-### Exploit Chain
+### Stage overview
 
-| Stage | Name | Description |
-|-------|------|-------------|
-| 0 | Triple-Free Race | Trigger UCred UAF via `sys_netcontrol`, spray IPv6 rthdr buffers, find overlapping sockets (twins/triplets) |
-| 1 | Kqueue Reclaim | Free a triplet's rthdr, reclaim with `kqueue()`, leak `proc_filedesc` from kernel |
-| 2 | Pipe Leak | Read kernel pipe data pointers via overlapping rthdr |
-| 3 | Pipe Corruption | Corrupt pipe buffer for fast arbitrary kernel R/W |
-| 4 | Find curproc | Walk kernel structures to find current process |
-| 5 | Jailbreak | Patch `ucred` (uid=0, caps=0xFF...FF), escape AppJail sandbox |
+| Stage | Name | Purpose |
+|---:|---|---|
+| 0 | Triple-free race | Trigger UCred UAF and search overlapping sockets. |
+| 1 | Kqueue reclaim | Reclaim freed rthdr memory and leak `proc_filedesc`. |
+| 2 | Pipe leak | Recover kernel pipe data pointers through overlap. |
+| 3 | Pipe corruption | Establish faster arbitrary kernel read/write. |
+| 4 | `curproc` discovery | Walk kernel structures for the current process. |
+| 5 | Jailbreak research | Patch credential and sandbox-related process state. |
 
 ## Requirements
 
-- PS5 console on firmware **11.60** (or compatible, see offsets)
-- Netflix app installed
-- Computer on the same network running the MITM proxy
-- Python 3 with `mitmproxy` installed
+- PS5 on firmware **11.60** or a deliberately compatible research target.
+- Netflix app installed and launchable.
+- A computer on the same network as the console.
+- Python 3 and `mitmproxy` for the local proxy path.
+- Node.js for JavaScript syntax checks.
 
-## Usage
+## Quick start
 
-### 1. Setup Proxy
+From a clean checkout:
+
 ```bash
-cd proxy/
-pip install mitmproxy
+python3 -m pip install mitmproxy
 ```
 
-### 2. Configure PS5 Network
-Set your PS5's proxy to point to your computer's IP on port 8080.
+Run quick syntax checks before launching the proxy:
 
-### 3. Run
 ```bash
-mitmdump -s proxy.py --listen-host 0.0.0.0 --listen-port 8080 --ssl-insecure --set connection_strategy=lazy
+node --check exploit/poopsploit_chain.js
+node --check exploit/inject_elfldr_automated.js
+python3 -m py_compile proxy/proxy.py
 ```
 
-### 4. Launch Netflix
-Open Netflix on your PS5. The exploit runs automatically.
+Start the proxy from the repository root:
 
-## Project Structure
-
+```bash
+mitmdump \
+  -s proxy/proxy.py \
+  --listen-host 0.0.0.0 \
+  --listen-port 8080 \
+  --ssl-insecure \
+  --set connection_strategy=lazy
 ```
+
+Configure the PS5 network proxy to point at the computer running `mitmdump` on port `8080`, then launch Netflix. The proxy replaces selected Netflix JavaScript responses with the local loader chain.
+
+## Runtime modes
+
+- `TJB_RUNTIME.exploit_mode` defaults to the `netcontrol` path in `exploit/inject_elfldr_automated.js`.
+- `TJB_RUNTIME.fw_target` is pinned to `11.60` for the current research stage.
+- `proxy/proxy.py` keeps auto-blacklist behavior disabled by default: `AUTOBLACKLIST_MODE=off`.
+- Fuzz auto-blacklist mode can be enabled explicitly when doing controlled crash triage:
+
+```bash
+AUTOBLACKLIST_MODE=fuzz mitmdump \
+  -s proxy/proxy.py \
+  --listen-host 0.0.0.0 \
+  --listen-port 8080 \
+  --ssl-insecure \
+  --set connection_strategy=lazy
+```
+
+## Success indicators
+
+For a successful netcontrol path up to the KASLR-leak phase, the console/proxy logs should include milestones similar to:
+
+- `[S0] TWINS_FOUND ...`
+- `[S0] TRIPLETS_FOUND ...`
+- `[S1] KQUEUE_RECLAIM_OK ...`
+- `[S1] PROC_FILEDESC=0x...`
+
+Useful failure signatures include repeated Stage 0 progress without twins, Stage 1 attempts ending without kqueue reclaim, or route errors showing that a local payload file was not served.
+
+## Verified Netflix-sandbox syscalls
+
+| Syscall / primitive | Status | Notes |
+|---|---:|---|
+| `socket(AF_UNIX)` | ✅ | Available inside the tested Netflix sandbox. |
+| `socket(AF_INET6, SOCK_STREAM)` | ✅ | IPv6 TCP sockets work. |
+| `socketpair(AF_UNIX)` | ✅ | Available during syscall probing. |
+| `setsockopt(IPV6_RTHDR)` | ✅ | Set, read, and free paths validated. |
+| `getsockopt(IPV6_RTHDR)` | ✅ | Returns expected tagged data. |
+| `sys_netcontrol` | ✅ | UAF trigger path confirmed for research. |
+| `setuid(1)` | ✅ | Used in the race sequence. |
+| `kqueue()` | ✅ | Used for Stage 1 reclaim. |
+| `pipe()` | ✅ | Available for pipe primitive work. |
+| `sched_yield()` | ✅ | Available. |
+| `setsockopt(IPV6_PKTINFO)` | ✅ | Useful for pktopts-backed R/W patterns. |
+| `setsockopt(IPV6_TCLASS)` | ✅ | Available. |
+| `mmap(ANON, RW)` | ✅ | Available. |
+| `dup()` | ❌ | Blocked in this sandbox. |
+| `fcntl()` | ❌ | Blocked in this sandbox. |
+| `umtx_op` | ❌ | Observed to hang the process. |
+
+## Repository layout
+
+```text
 TontoJB/
-├── exploit/
-│   ├── poopsploit_chain.js    # Main exploit payload (Stage 0-5)
-│   └── inject_elfldr.js       # WebKit injection + syscall primitives
-├── proxy/
-│   ├── proxy.py               # MITM proxy with JS injection
-│   └── hosts.txt              # Blocked telemetry domains
-├── offsets/
-│   └── offsets.js              # Kernel struct offsets per FW version
-├── payloads/
-│   └── lapse.js               # Post-exploitation payload
-├── docs/
-│   ├── research.md            # Full research log
-│   └── syscall_results.md     # Verified syscall availability
-└── README.md
+├── exploit/        # Exploit chain, loader, and research-stage JS components
+├── payloads/       # Post-exploitation payload experiments and loader assets
+├── proxy/          # mitmproxy delivery layer and host blocking configuration
+├── offsets/        # Firmware-specific kernel offsets
+├── docs/           # Research notes, telemetry docs, run matrices, audits
+├── tools/          # Local analysis and telemetry helper scripts
+├── LICENSE         # MIT license
+└── README.md       # Public entry point
 ```
 
-## Verified Syscalls (Netflix Sandbox)
+The repository intentionally ignores local certificates, runtime telemetry, cache folders, and console-log dumps. See `.gitignore` before staging a public release.
 
-| Syscall | Status | Notes |
-|---------|--------|-------|
-| `socket(AF_UNIX)` | ✅ | Not blocked in Netflix sandbox |
-| `socket(AF_INET6, SOCK_STREAM)` | ✅ | TCP sockets work |
-| `socketpair(AF_UNIX)` | ✅ | |
-| `setsockopt(IPV6_RTHDR)` | ✅ | Set + read + free all work |
-| `getsockopt(IPV6_RTHDR)` | ✅ | Returns 256 bytes with correct tags |
-| `sys_netcontrol` | ✅ | UAF trigger confirmed |
-| `setuid(1)` | ✅ | |
-| `kqueue()` | ✅ | Stage 1 reclaim |
-| `pipe()` | ✅ | fd in return value |
-| `sched_yield()` | ✅ | |
-| `setsockopt(IPV6_PKTINFO)` | ✅ | 20 bytes R/W |
-| `setsockopt(IPV6_TCLASS)` | ✅ | |
-| `mmap(ANON, RW)` | ✅ | |
-| `dup()` | ❌ | Blocked |
-| `fcntl()` | ❌ | Blocked |
-| `umtx_op` | ❌ | Hangs process |
+## Documentation
 
-## Kernel Offsets (FW 11.60)
+- [`docs/README.md`](docs/README.md) — documentation map and publication notes.
+- [`docs/research.md`](docs/research.md) — research log and syscall capability findings.
+- [`docs/mitm_mcp_telemetry.md`](docs/mitm_mcp_telemetry.md) — local telemetry/MCP workflow.
+- [`docs/run-matrix.md`](docs/run-matrix.md) — run comparison notes, if included in your release.
+- [`docs/post_twin_pipeline.md`](docs/post_twin_pipeline.md) — post-twin execution notes, if included in your release.
 
-```javascript
-// From Luac0re offsets.lua — FW 11.60 = 11.00
-DATA_BASE         = 0x0D30000
-ALLPROC           = 0x02875D70
-SECURITY_FLAGS    = 0x00D8C064
-ROOTVNODE         = 0x030B7510
-KERNEL_PMAP_STORE = 0x02E04F18
+## Known limitations
 
-PROC_PID          = 0xBC
-PROC_UCRED        = 0x40
-PROC_FD           = 0x48
-INPCB_PKTOPTS     = 0x120
-IP6PO_RTHDR       = 0x70
-PIPE_SIGIO        = 0xD8
-```
+- The current target scope is intentionally narrow: firmware 11.60 research conditions.
+- Netflix JavaScript execution is constrained compared with native or multi-threaded environments.
+- Some syscalls used in related chains are blocked or unreliable in this sandbox.
+- Reliability depends on heap state, timing, route delivery, and target runtime behavior.
+- Local telemetry may include private network addresses; keep runtime logs out of public commits.
 
-## Credits & Attribution
+## Credits and attribution
 
-This project builds on the work of many talented researchers:
+TontoJB is a port/adaptation and integration effort that stands on public PS5 and FreeBSD exploitation research. The implementation, Netflix delivery path, and repository-specific research notes here should be credited to this repository's author/contributors; the underlying vulnerability classes, primitives, and techniques remain credited to their original researchers.
 
-- **[TheFlow](https://github.com/theofficialflow)** — Original `sys_netcontrol` kernel exploit
-- **[egycnq](https://github.com/egycnq)** — Porting netcontrol exploit to Luac0re (`poops_ps5.lua`)
-- **[Gezine/Luac0re](https://github.com/Gezine/Luac0re)** — Lua-based PS5 exploit framework, kernel offsets
-- **[sleirsgoevy](https://github.com/sleirsgoevy)** — `kstuff-lite` / `prosper0gdb` kernel primitives (kread/kwrite via IPV6_PKTINFO)
-- **[Y2JB / lapse.js](https://github.com/)** — AIO-based UAF technique, `make_aliased_pktopts`, kernel ARW via PKTINFO master/victim pattern
-- **[CTurt](https://github.com/CTurt)** — `mast1c0re` writeup
-- **[McCaulay](https://github.com/McCaulay)** — `mast1c0re` reference implementation
-- **Netflix WebKit exploit chain** — `inject_elfldr_automated.js` primitives (malloc, read64/write64, syscall wrappers)
+Prior work and references include:
 
-## Disclaimer
+- [TheFlow](https://github.com/theofficialflow) — original `sys_netcontrol` kernel exploitation research.
+- [egycnq](https://github.com/egycnq) — Luac0re-oriented netcontrol work and `poops_ps5.lua` lineage.
+- [Gezine / Luac0re](https://github.com/Gezine/Luac0re) — Lua-based PS5 exploit framework and offsets lineage.
+- [sleirsgoevy](https://github.com/sleirsgoevy) — `kstuff-lite`, `prosper0gdb`, and kernel primitive references.
+- Y2JB / `lapse.js` lineage — AIO and `ip6_pktopts`-style exploitation references.
+- [CTurt](https://github.com/CTurt) and [McCaulay](https://github.com/McCaulay) — `mast1c0re` research and references.
 
-This tool is provided for **educational and research purposes only**.
-Use at your own risk. The developers are not responsible for any damage, data loss, or other consequences resulting from the use of this software.
+If you publish derivative work from this repository, keep these credits intact and clearly distinguish original discovery from porting, adaptation, and integration work.
+
+## Contributing boundaries
+
+- Keep exploit-chain changes narrowly scoped and documented.
+- Do not commit private certificates, runtime telemetry, crash dumps, or local network logs.
+- Prefer reproducible notes in `docs/` over raw console dumps.
+- Document firmware assumptions when adding offsets or changing target behavior.
 
 ## License
 
-MIT
+This repository is released under the MIT License. See [`LICENSE`](LICENSE).

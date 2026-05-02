@@ -1,0 +1,12 @@
+netcontrol exploit can do double free f_cred without dup
+Spray ipv6 rthdr to reclaim two malloc
+Find twins
+Do setuid to prepare fresh ucred buffer with cr_ref 1
+Create one socket to bump cr_ref to 2
+Free one of twins
+Do setuid to malloc ucred again this will call crfree to previous ucred buffer but cr_ref was 2 so previous ucred is not freed
+Repeat this to reclaim freed twin buffer while using rthdr getsockopt to verify overlap happened
+Once you got ucred overlap leak ucred and patch authid and caps to get full privilege to syscalls
+
+Now you have access to dup with any userland
+Use it to get triple free and get arbitrary kernel read write.
