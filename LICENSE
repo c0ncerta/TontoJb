@@ -19,3 +19,56 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+Additional Research Context Notice
+----------------------------------
+
+This additional notice describes the security-research context in which this
+repository is published. It is intended to preserve the MIT License above, not
+to narrow, replace, or add conditions to the permission grant stated in that
+license. It is not legal advice; you are responsible for understanding and
+following the rules that apply to your jurisdiction, hardware, accounts,
+network, and use case.
+
+TontoJB is published as a public proof-of-concept research repository for a
+console security exploit chain. The code, documentation, payload experiments,
+proxy tooling, offsets, and related materials are provided for educational,
+defensive, interoperability, archival, and good-faith security-research use by
+people who understand the technical and legal risks of kernel exploitation.
+
+Use this project only on hardware, accounts, networks, and environments that
+you own or are explicitly authorized to test. Nothing in this repository grants
+permission to access systems without authorization, bypass access controls for
+abuse, infringe third-party rights, distribute pirated content, evade payment,
+cheat in online services, disrupt services, or violate applicable law,
+regulation, contractual terms, platform rules, export controls, or privacy
+obligations.
+
+Because this repository concerns low-level exploit research, running or adapting
+the Software can crash applications, corrupt state, damage data, destabilize or
+soft-brick hardware, trigger account or service restrictions, expose private
+network information in logs, or produce behavior that varies by firmware,
+runtime state, target configuration, timing, and patches. You assume all risk
+for testing, modifying, publishing, deploying, or deriving work from this
+repository.
+
+The authors and contributors do not provide any warranty, guarantee of exploit
+reliability, promise of firmware support, duty to update offsets, duty to fix
+bugs, duty to provide operational support, or assurance that any technique will
+remain functional, safe, lawful, or permitted by any third party. No contributor
+is responsible for damage to devices, loss of data, bans, service interruptions,
+legal consequences, misuse by third parties, or downstream modifications made by
+others.
+
+This project is not affiliated with, endorsed by, sponsored by, or authorized by
+Sony, PlayStation, Netflix, FreeBSD, or any other referenced vendor, platform,
+researcher, project, or rights holder. Product names, trademarks, service names,
+and repository links are used only for identification, attribution, historical
+context, and interoperability/security-research discussion.
+
+Some parts of this work build on or adapt public research, references, tools,
+techniques, and exploit-lineage material from third parties. Keep copyright
+notices, license notices, attribution, and provenance clear when copying,
+modifying, publishing, or redistributing this repository or derivative work. Do
+not imply original discovery where the work is a port, adaptation, integration,
+or continuation of prior public research.
