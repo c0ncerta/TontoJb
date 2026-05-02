@@ -1,10 +1,16 @@
 # TontoJB
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Research PoC](https://img.shields.io/badge/status-research%20PoC-orange.svg)](DISCLAIMER.md)
+[![Target: PS5 11.60](https://img.shields.io/badge/target-PS5%2011.60-blue.svg)](docs/firmware-scope.md)
+
 **PS5 Netflix-sandbox kernel exploit proof of concept for firmware 11.60.**
 
 TontoJB documents and implements a research PoC for driving the PS5 Netflix WebKit process into a kernel-exploitation chain: MITM-assisted JavaScript injection, syscall primitive validation, `sys_netcontrol` UCred UAF triggering, IPv6 `ip6_pktopts` heap shaping, kernel read/write primitives, and sandbox/credential patching research.
 
-This repository is written for security researchers, console-research developers, and people already comfortable with kernel exploitation concepts. It is not a consumer jailbreak package.
+This repository is written for security researchers, console-research developers, and people already comfortable with kernel exploitation concepts. It is a research-only proof of concept, not a consumer jailbreak package, piracy tool, or supported end-user product.
+
+Read first: [`DISCLAIMER.md`](DISCLAIMER.md), [`SECURITY.md`](SECURITY.md), [`NOTICE.md`](NOTICE.md), and [`docs/firmware-scope.md`](docs/firmware-scope.md).
 
 ## Responsible-use notice
 
@@ -153,10 +159,21 @@ The repository intentionally ignores local certificates, runtime telemetry, cach
 ## Documentation
 
 - [`docs/README.md`](docs/README.md) — documentation map and publication notes.
+- [`docs/architecture.md`](docs/architecture.md) — high-level architecture and trust-boundary overview.
+- [`docs/firmware-scope.md`](docs/firmware-scope.md) — supported target assumptions and unsupported firmware notes.
+- [`docs/troubleshooting.md`](docs/troubleshooting.md) — setup-level troubleshooting and publication hygiene checks.
 - [`docs/research.md`](docs/research.md) — research log and syscall capability findings.
 - [`docs/mitm_mcp_telemetry.md`](docs/mitm_mcp_telemetry.md) — local telemetry/MCP workflow.
 - [`docs/run-matrix.md`](docs/run-matrix.md) — run comparison notes, if included in your release.
 - [`docs/post_twin_pipeline.md`](docs/post_twin_pipeline.md) — post-twin execution notes, if included in your release.
+
+## Project policy files
+
+- [`DISCLAIMER.md`](DISCLAIMER.md) — public research-use boundaries and risk acknowledgement.
+- [`SECURITY.md`](SECURITY.md) — responsible reporting scope and out-of-scope support requests.
+- [`NOTICE.md`](NOTICE.md) — third-party attribution and provenance guidance.
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — contribution boundaries for safe public research work.
+- [`CHANGELOG.md`](CHANGELOG.md) — public research snapshot history.
 
 ## Known limitations
 

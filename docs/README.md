@@ -6,11 +6,24 @@ This directory contains research notes and operator-facing documentation for the
 
 | Document | Purpose |
 |---|---|
+| [`architecture.md`](architecture.md) | High-level architecture, repository layers, conceptual chain, and trust boundaries. |
+| [`firmware-scope.md`](firmware-scope.md) | Firmware support matrix and documentation expectations for scoped claims. |
+| [`troubleshooting.md`](troubleshooting.md) | Setup-level troubleshooting and publication hygiene checks. |
 | [`research.md`](research.md) | Main research log: origin, sandbox capability testing, UAF evaluation, and implementation notes. |
 | [`mitm_mcp_telemetry.md`](mitm_mcp_telemetry.md) | Local telemetry bridge for comparing proxy/Netflix runs through MCP tools. |
 | [`run-matrix.md`](run-matrix.md) | Run comparison matrix for tracking reliability and failure modes. |
 | [`post_twin_pipeline.md`](post_twin_pipeline.md) | Notes for stages after twin/triplet discovery. |
 | [`webkit-probe-plan.md`](webkit-probe-plan.md) | WebKit probing plan and instrumentation notes. |
+
+## Root policy files
+
+| Document | Purpose |
+|---|---|
+| [`../DISCLAIMER.md`](../DISCLAIMER.md) | Research-use boundaries, non-affiliation, and risk acknowledgement. |
+| [`../SECURITY.md`](../SECURITY.md) | Responsible reporting scope and unsupported request categories. |
+| [`../NOTICE.md`](../NOTICE.md) | Attribution, provenance, and third-party reference guidance. |
+| [`../CONTRIBUTING.md`](../CONTRIBUTING.md) | Contribution boundaries and publication checklist. |
+| [`../CHANGELOG.md`](../CHANGELOG.md) | Public research snapshot history. |
 
 ## Publication hygiene
 
