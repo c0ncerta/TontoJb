@@ -7,8 +7,13 @@ import proxy as base_proxy
 tls_clienthello = base_proxy.tls_clienthello
 
 
+def _proxy_server_ip(flow: http.HTTPFlow) -> bytes:
+    client_ip = flow.client_conn.peername[0] if flow.client_conn.peername else "unknown"
+    return base_proxy.resolve_proxy_server_ip(flow, client_ip).encode("UTF-8")
+
+
 def request(flow: http.HTTPFlow) -> None:
-    proxy_server_ip = flow.client_conn.sockname[0].encode("UTF-8")
+    proxy_server_ip = _proxy_server_ip(flow)
 
     if "/js/common/config/text/config.text.lruderrorpage" in flow.request.path:
         inject_path = os.path.join(

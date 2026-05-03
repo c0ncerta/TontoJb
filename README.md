@@ -82,6 +82,11 @@ node --check exploit/main.js
 python3 -m py_compile proxy/proxy.py
 ```
 
+Optional local network config: keep private IPs out of commits by copying
+[`proxy/local.env.example`](proxy/local.env.example) to `proxy/local.env` and setting
+`TJB_PROXY_PUBLIC_IP` there. `proxy/local.env`, `.env.local`, and other local config
+overrides are ignored by git; the public code keeps generic placeholders.
+
 Start the proxy from the repository root:
 
 ```bash

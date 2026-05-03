@@ -19,6 +19,15 @@ LOGS/
 
 # Local agent/workspace state
 MEMORY/
+.claude/
+
+# Local private configuration / environment overrides
+.env
+.env.*
+!.env.example
+.tontojb.local.env
+proxy/local.env
+proxy/local_config.*
 
 # Imported/reference material kept local only
 gezine/

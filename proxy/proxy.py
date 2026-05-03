@@ -9,6 +9,51 @@ from typing import Optional
 
 import mitm_telemetry as telemetry
 
+
+def _load_local_env_file(path: str) -> int:
+    """Load simple KEY=VALUE overrides from an ignored local file.
+
+    Existing process environment variables win, so shell-provided values can
+    override private files without editing the public repository.
+    """
+    loaded = 0
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            for raw_line in f:
+                line = raw_line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                key, value = line.split("=", 1)
+                key = key.strip()
+                if not re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", key):
+                    continue
+                value = value.strip().strip('"').strip("'")
+                if key not in os.environ:
+                    os.environ[key] = value
+                    loaded += 1
+    except FileNotFoundError:
+        return 0
+    except Exception as e:
+        print(f"[!] WARNING: failed to load local config {path}: {e}")
+    return loaded
+
+
+def _load_local_env_overrides() -> None:
+    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    candidates = [
+        os.path.join(repo_root, ".env.local"),
+        os.path.join(repo_root, ".tontojb.local.env"),
+        os.path.join(os.path.dirname(__file__), "local.env"),
+    ]
+    for candidate in candidates:
+        loaded = _load_local_env_file(candidate)
+        if loaded:
+            rel_path = os.path.relpath(candidate, repo_root)
+            print(f"[+] Loaded {loaded} local config value(s) from {rel_path}")
+
+
+_load_local_env_overrides()
+
 # --- AUTO BLACKLIST STATE ---
 last_tried_sys = None
 last_fuzz_info = None  # Stores "sys(624) arg1=0x4141..." for fuzzing phases
