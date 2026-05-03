@@ -13,7 +13,7 @@ import mitm_telemetry as telemetry
 last_tried_sys = None
 last_fuzz_info = None  # Stores "sys(624) arg1=0x4141..." for fuzzing phases
 sys_lock = threading.Lock()
-poopsploit_path = os.path.join(os.path.dirname(__file__), "..", "exploit", "inject_elfldr_automated.js")
+poopsploit_path = os.path.join(os.path.dirname(__file__), "..", "exploit", "main.js")
 fuzz_log_path = os.path.join(os.path.dirname(__file__), "..", "..", "DOCS", "fuzz_crashes.log")
 AUTOBLACKLIST_MODE = os.environ.get("AUTOBLACKLIST_MODE", "off").strip().lower()
 AUTOBLACKLIST_ENABLED = AUTOBLACKLIST_MODE == "fuzz"
@@ -463,7 +463,7 @@ def request(flow: http.HTTPFlow) -> None:
             )
             return
 
-        inject_name = "webkit_probe_harness.js" if TJB_LOADER_PAYLOAD == "webkit_probe" else "inject_elfldr_automated.js"
+        inject_name = "webkit_probe_harness.js" if TJB_LOADER_PAYLOAD == "webkit_probe" else "main.js"
         route_name = "lruderrorpage-webkit-probe" if TJB_LOADER_PAYLOAD == "webkit_probe" else "lruderrorpage-loader"
         inject_path = os.path.join(os.path.dirname(__file__), "..", "exploit", inject_name)
         print(f"[*] Injecting JavaScript from: {inject_path}")

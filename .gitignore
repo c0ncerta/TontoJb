@@ -22,6 +22,7 @@ MEMORY/
 
 # Imported/reference material kept local only
 gezine/
+payloads/extra/
 
 # Scratch planning folders kept outside the public release
 /Plans/

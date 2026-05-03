@@ -10,7 +10,7 @@ Run these before attaching the proxy to a console session:
 
 ```sh
 node --check exploit/poopsploit_chain.js
-node --check exploit/inject_elfldr_automated.js
+node --check exploit/main.js
 python3 -m py_compile proxy/proxy.py
 python3 -m py_compile proxy/proxy_env.py
 python3 -m py_compile tools/luacore_invariant_audit.py

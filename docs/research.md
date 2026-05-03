@@ -9,7 +9,7 @@ The research was conducted as part of `poopsploit-net-n`, building on existing w
 ## Phase 1: Sandbox Capabilities Discovery
 
 ### Initial Findings
-- The Netflix app on PS5 runs inside a WebKit-based process with `inject_elfldr_automated.js` providing memory R/W primitives (`malloc`, `read64_uncompressed`, `write64_uncompressed`) and raw `syscall()` access.
+- The Netflix app on PS5 runs inside a WebKit-based process with `main.js` providing memory R/W primitives (`malloc`, `read64_uncompressed`, `write64_uncompressed`) and raw `syscall()` access.
 - The app communicates via HTTP to `nrdp60-appboot.netflix.com`, which can be intercepted by a MITM proxy to inject arbitrary JavaScript.
 
 ### Socket Tests

@@ -2,11 +2,11 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Research PoC](https://img.shields.io/badge/status-research%20PoC-orange.svg)](docs/policy/DISCLAIMER.md)
-[![Target: PS5 11.60](https://img.shields.io/badge/target-PS5%2011.60-blue.svg)](docs/firmware-scope.md)
+[![Target: PS5 9.00–12.00](https://img.shields.io/badge/target-PS5%209.00–12.00-blue.svg)](docs/firmware-scope.md)
 
-**PS5 Netflix-sandbox kernel exploit proof of concept for firmware 11.60.**
+**PS5 Netflix-sandbox kernel exploit proof of concept for firmware 9.00–12.00.**
 
-TontoJB documents and implements a research PoC for driving the PS5 Netflix WebKit process into a kernel-exploitation chain: MITM-assisted JavaScript injection, syscall primitive validation, `sys_netcontrol` UCred UAF triggering, IPv6 `ip6_pktopts` heap shaping, kernel read/write primitives, and sandbox/credential patching research.
+TontoJB documents and implements a research PoC for driving the PS5 Netflix WebKit process into a kernel-exploitation chain: MITM-assisted JavaScript injection, syscall primitive validation, AIO double-free race triggering, IPv6 `ip6_pktopts` heap shaping, kernel read/write primitives, and sandbox/credential patching research.
 
 This repository is written for security researchers, console-research developers, and people already comfortable with kernel exploitation concepts. It is a research-only proof of concept, not a consumer jailbreak package, piracy tool, or supported end-user product.
 
@@ -24,10 +24,10 @@ Read first: [`DISCLAIMER.md`](docs/policy/DISCLAIMER.md), [`SECURITY.md`](docs/p
 
 | Area | Status | Notes |
 |---|---:|---|
-| Target firmware | 11.60 | Offsets are pinned to the documented 11.60 research target. |
+| Target firmware | 9.00–12.00 | Offsets cover 9.00, 10.x, 11.x, and 12.00. 11.20/11.40/11.60 share 11.00 offsets. |
 | Delivery path | Netflix + MITM proxy | No disc path is required for this research route. |
 | Sandbox syscalls | Verified subset | See syscall table and `docs/research.md`. |
-| Netcontrol UAF path | Implemented PoC | Based on public prior work, adapted for this environment. |
+| AIO double-free race | Active exploit path | `poopsploit_chain.js` — same-core suspend/resume race. |
 | Kernel R/W chain | Research PoC | Reliability depends on runtime state and target conditions. |
 
 ## Exploit chain
@@ -36,28 +36,31 @@ Read first: [`DISCLAIMER.md`](docs/policy/DISCLAIMER.md), [`SECURITY.md`](docs/p
 Netflix app WebKit
   -> local mitmproxy route replacement
   -> JavaScript loader / syscall primitives
-  -> sys_netcontrol UCred UAF trigger
-  -> IPv6 rthdr heap spray and twin/triplet discovery
-  -> kqueue reclaim and kernel structure leaks
-  -> pipe / pktopts kernel R/W primitives
-  -> curproc discovery
-  -> ucred patch and sandbox escape research
+  -> AIO double-free race (poopsploit_chain.js)
+  -> IPv6 rthdr heap spray and twin discovery
+  -> ucred overlap and privilege escalation
+  -> pipe corruption kernel R/W primitives
+  -> curproc discovery and sandbox escape
+  -> debug flag patches (security_flags, target_id, qa_flags, utoken)
+  -> auth/caps escalation (SYSTEM_AUTHID, sceCaps max)
+  -> ELF loader (elfldr.elf, port 9021)
 ```
 
 ### Stage overview
 
 | Stage | Name | Purpose |
 |---:|---|---|
-| 0 | Triple-free race | Trigger UCred UAF and search overlapping sockets. |
-| 1 | Kqueue reclaim | Reclaim freed rthdr memory and leak `proc_filedesc`. |
-| 2 | Pipe leak | Recover kernel pipe data pointers through overlap. |
-| 3 | Pipe corruption | Establish faster arbitrary kernel read/write. |
-| 4 | `curproc` discovery | Walk kernel structures for the current process. |
-| 5 | Jailbreak research | Patch credential and sandbox-related process state. |
+| 1 | AIO double-free race | Race `aio_multi_delete` on same core to double-free AIO request. |
+| 2 | Twin discovery | IPv6 rthdr spray, ucred overlap, privilege escalation, dup unlock. |
+| 3 | KASLR leak | Kqueue reclaim to leak kernel base address. |
+| 4 | Pipe corruption | Corrupt pipe buffer pointer for fast arbitrary kernel R/W. |
+| 5 | Jailbreak | `curproc` walk, uid=0, rootvnode patch, sandbox escape. |
+| 6 | Debug patches | `security_flags`, `target_id` (DEX), `qa_flags`, `utoken_flags`. |
+| 7 | Auth/caps | `SYSTEM_AUTHID` + `sceCaps[0/1] = 0xFFFF…`, ELF loader launch. |
 
 ## Requirements
 
-- PS5 on firmware **11.60** or a deliberately compatible research target.
+- PS5 on firmware **9.00–12.00** (11.20, 11.40, 11.60 use 11.00 offsets).
 - Netflix app installed and launchable.
 - A computer on the same network as the console.
 - Python 3 and `mitmproxy` for the local proxy path.
@@ -75,7 +78,7 @@ Run quick syntax checks before launching the proxy:
 
 ```bash
 node --check exploit/poopsploit_chain.js
-node --check exploit/inject_elfldr_automated.js
+node --check exploit/main.js
 python3 -m py_compile proxy/proxy.py
 ```
 
@@ -94,8 +97,8 @@ Configure the PS5 network proxy to point at the computer running `mitmdump` on p
 
 ## Runtime modes
 
-- `TJB_RUNTIME.exploit_mode` defaults to the `netcontrol` path in `exploit/inject_elfldr_automated.js`.
-- `TJB_RUNTIME.fw_target` is pinned to `11.60` for the current research stage.
+- `TJB_RUNTIME.exploit_mode` is set to `netcontrol` in `exploit/main.js` but the active exploit path is `poopsploit_chain.js` (AIO double-free).
+- `TJB_FW_VERSION` is detected at runtime; offsets cover 9.00–12.00.
 - `proxy/proxy.py` keeps auto-blacklist behavior disabled by default: `AUTOBLACKLIST_MODE=off`.
 - Fuzz auto-blacklist mode can be enabled explicitly when doing controlled crash triage:
 
@@ -110,14 +113,15 @@ AUTOBLACKLIST_MODE=fuzz mitmdump \
 
 ## Success indicators
 
-For a successful netcontrol path up to the KASLR-leak phase, the console/proxy logs should include milestones similar to:
+For a successful run, the console/proxy logs should include milestones similar to:
 
-- `[S0] TWINS_FOUND ...`
-- `[S0] TRIPLETS_FOUND ...`
-- `[S1] KQUEUE_RECLAIM_OK ...`
-- `[S1] PROC_FILEDESC=0x...`
+- `[TJB] Stage 1 winner found` — AIO double-free race won
+- `[TJB] TWINS_FOUND` — overlapping ucred sockets found
+- `[TJB] privilege_escalated=true dup=true` — Stage 2 complete
+- `[KS] Gezine path: privilege=true dup=true` — kernel stages started
+- `TontoJB: Kernel jailbreak complete!` — Stage 7 done, ELF loader launching
 
-Useful failure signatures include repeated Stage 0 progress without twins, Stage 1 attempts ending without kqueue reclaim, or route errors showing that a local payload file was not served.
+Useful failure signatures include repeated Stage 1 races without a winner, Stage 2 ending without twins, or route errors showing a local payload file was not served.
 
 ## Verified Netflix-sandbox syscalls
 
@@ -128,7 +132,7 @@ Useful failure signatures include repeated Stage 0 progress without twins, Stage
 | `socketpair(AF_UNIX)` | ✅ | Available during syscall probing. |
 | `setsockopt(IPV6_RTHDR)` | ✅ | Set, read, and free paths validated. |
 | `getsockopt(IPV6_RTHDR)` | ✅ | Returns expected tagged data. |
-| `sys_netcontrol` | ✅ | UAF trigger path confirmed for research. |
+| `sys_netcontrol` | ✅ | Available; UAF path researched but active chain uses AIO double-free. |
 | `setuid(1)` | ✅ | Used in the race sequence. |
 | `kqueue()` | ✅ | Used for Stage 1 reclaim. |
 | `pipe()` | ✅ | Available for pipe primitive work. |
@@ -136,9 +140,9 @@ Useful failure signatures include repeated Stage 0 progress without twins, Stage
 | `setsockopt(IPV6_PKTINFO)` | ✅ | Useful for pktopts-backed R/W patterns. |
 | `setsockopt(IPV6_TCLASS)` | ✅ | Available. |
 | `mmap(ANON, RW)` | ✅ | Available. |
-| `dup()` | ❌ | Blocked in this sandbox. |
-| `fcntl()` | ❌ | Blocked in this sandbox. |
-| `umtx_op` | ❌ | Observed to hang the process. |
+| `dup()` | ✅ | Unlocked after ucred privilege escalation in Stage 2. |
+| `fcntl()` | ✅ | Used for non-blocking pipe setup in Stage 3. |
+| `umtx_op` | ✅ | Used as ROP worker synchronization mechanism in Stage 3+. |
 
 ## Repository layout
 
@@ -177,7 +181,7 @@ The repository intentionally ignores local certificates, runtime telemetry, cach
 
 ## Known limitations
 
-- The current target scope is intentionally narrow: firmware 11.60 research conditions.
+- Tested firmware range is 9.00–12.00; behavior on other versions is untested.
 - Netflix JavaScript execution is constrained compared with native or multi-threaded environments.
 - Some syscalls used in related chains are blocked or unreliable in this sandbox.
 - Reliability depends on heap state, timing, route delivery, and target runtime behavior.
